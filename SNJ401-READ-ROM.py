@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
+from PySide2.QtWidgets import QMessageBox
 import os
 import re
 import msvcrt
@@ -7,37 +8,16 @@ import msvcrt
 
 re_hex_data = re.compile(r"(?:[0-9a-fA-F]{2}\s??){16}")
 re_space_line = re.compile(r"\s+")  # 空行
+patternHeadInfo = """SET_DEC_FILE "SNJ401.DEC"
+HEADER  PA3,VPP,PB3,PB2;
 
-write_head_info = """SET_DEC_FILE "YSV58080.DEC"
-
-HEADER CS,SCK,DI,DO;
-
-SPM_PATTERN (readrom_pat) {
-   //C S D D
-   //  C
-   //S K I O
-    *0 0 0 X*TS1, RPT 10;//TS1 50nS
-    *0 0 0 X*;
-    *0 0 0 X*;
-// DI = 0x38 => 0011 1000
-// DO = 0xXX => XXXX XXXX
-    *0 1 0 X*;
-    *0 0 0 X*;
-    *0 1 0 X*;
-    *0 0 0 X*;
-    *0 1 1 X*;
-    *0 0 1 X*;
-    *0 1 1 X*;
-    *0 0 1 X*;
-    *0 1 1 X*;
-    *0 0 1 X*;
-    *0 1 0 X*;
-    *0 0 0 X*;
-    *0 1 0 X*;
-    *0 0 0 X*;
-    *0 1 0 X*;
-    *0 0 0 X*;
+SPM_PATTERN(blanCheck)
+{
+           //PVPP
+           //APBB
+           //3P32
 """
+
 write_end_info = """    *1 0 0 X*RPT 16;
     *1 0 0 X*;
 }
@@ -111,51 +91,56 @@ def write_pat_to_file_last_bit(data, bit_list, waveform_format):
                 fp.write("    *0 1 0 %s*;\n" % (bit_list[i]))
 
 
-def data_list_to_pat_list(data_list, bitSize):
-    pin_type = ("input", "output")
-    data_count = 1
-    isFist = True
-    for data in data_list:
-        if isFist:
-            isFist = False
-            with open("readrom.pat", "a", encoding="UTF-8") as fp:
-                fp.write(write_head_info)
-        if data_count * 8 < bitSize:
-            bit_list = int_to_pat(data, "output", pin_type)
-            write_pat_to_file(data, bit_list, "NRZ")
-        elif data_count * 8 == bitSize:
-            print("==========")
-            bit_list = int_to_pat(data, "output", pin_type)
-            write_pat_to_file_last_bit(data, bit_list, "NRZ")
-            with open("readrom.pat", "a", encoding="UTF-8") as fp:
-                fp.write("\n")
-                fp.write(write_end_info)
-        if data_count * 8 > bitSize:
-            print(">>>>>>")
-            return
-        data_count += 1
+def data2Pattern(patternFile, dataList):
+    dataCnt = 1
+    bitSize = len(dataList) * 8
+    with open(patternFile, "a", encoding="UTF-8") as fp:
+        fp.write(patternHeadInfo)
+
+        for data in dataList:
+            if data_count * 8 < bitSize:
+                bit_list = int_to_pat(data, "output", pin_type)
+                write_pat_to_file(data, bit_list, "NRZ")
+            elif data_count * 8 == bitSize:
+                print("==========")
+                bit_list = int_to_pat(data, "output", pin_type)
+                write_pat_to_file_last_bit(data, bit_list, "NRZ")
+                with open("readrom.pat", "a", encoding="UTF-8") as fp:
+                    fp.write("\n")
+                    fp.write(write_end_info)
+            if data_count * 8 > bitSize:
+                print(">>>>>>")
+                return
+            data_count += 1
 
 
-def get_file_data(data_file):
-    data_list = list()
-    with open(data_file, "rb") as fp:
-        file_size = os.path.getsize(data_file)
-        if file_size != 262144:
-            print("提供的ROM二进制文件大小不是256Kb,非2MBbit,请确认!!!")
+def getFileData(file, self):
+    dataList = list()
+    with open(file, "rb") as fp:
+        fileSize = os.path.getsize(file)
+        if fileSize != 128 * 1024:
+            MessageBox = QMessageBox()
+            MessageBox.critical(
+                None, "警告", f"{file} 不是128K 文件大小,请确认bin文件是否正确!"
+            )
         while True:
             data = fp.read(16)
             if not data:  # 文件末尾跳出
                 break
-            for metadata in data:
-                data_list.append(metadata)
-    return data_list
+            for metaData in data:
+                dataList.append(metaData)
+    return dataList
 
 
-def readRom():
-    sourceFile = "ROM.bin"
-    if os.path.exists("readrom.pat"):
-        os.remove("readrom.pat")
+def readRom(filePath):
+    parDir = os.path.dirname(filePath)
+    fileName, _ = os.path.split(filePath)
+    srcFile = parDir + "/" + fileName + ".pat"
+    if os.path.exists(srcFile):
+        os.remove(srcFile)
+    dataList = getFileData(filePath)
+    data2Pattern(dataList, srcFile)
 
-    data_list = get_file_data(source_file)
-    print(len(data_list))
-    data_list_to_pat_list(data_list, 2 * 1024 * 1024)
+
+if __name__ == "__main__":
+    readRom()
