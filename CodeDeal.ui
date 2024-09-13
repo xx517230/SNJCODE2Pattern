@@ -6,44 +6,66 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>483</width>
-    <height>350</height>
+    <width>447</width>
+    <height>338</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>SNJ Code Deal</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_3">
-   <item row="1" column="0">
+  <layout class="QGridLayout" name="gridLayout_4">
+   <item row="4" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>13</width>
-       <height>20</height>
+       <width>20</width>
+       <height>102</height>
       </size>
      </property>
     </spacer>
    </item>
-   <item row="2" column="0">
+   <item row="3" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QToolButton" name="tbtnDo">
+       <property name="minimumSize">
+        <size>
+         <width>25</width>
+         <height>25</height>
+        </size>
+       </property>
        <property name="text">
-        <string>执行</string>
+        <string>转换</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QToolButton" name="tbtnClose">
+       <property name="minimumSize">
+        <size>
+         <width>25</width>
+         <height>25</height>
+        </size>
+       </property>
        <property name="text">
         <string>退出</string>
        </property>
       </widget>
      </item>
     </layout>
+   </item>
+   <item row="5" column="0">
+    <widget class="QProgressBar" name="pBar">
+     <property name="value">
+      <number>0</number>
+     </property>
+     <property name="textVisible">
+      <bool>false</bool>
+     </property>
+    </widget>
    </item>
    <item row="0" column="0">
     <widget class="QGroupBox" name="groupBox">
@@ -64,28 +86,57 @@
      </layout>
     </widget>
    </item>
-   <item row="4" column="0">
-    <widget class="QProgressBar" name="pBar">
-     <property name="value">
-      <number>0</number>
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>型号选择</string>
      </property>
-     <property name="textVisible">
-      <bool>false</bool>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
      </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="rbtnSNJ401">
+        <property name="text">
+         <string>SNJ401</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="rbtnSNJ402">
+        <property name="text">
+         <string>SNJ402</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
-   <item row="3" column="0">
-    <spacer name="verticalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+   <item row="2" column="0">
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>生成读写Pattern选项</string>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>13</width>
-       <height>100</height>
-      </size>
-     </property>
-    </spacer>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QCheckBox" name="chkRead">
+        <property name="text">
+         <string>Read</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="chkWrite">
+        <property name="text">
+         <string>Write</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
   </layout>
   <action name="actSelect">
