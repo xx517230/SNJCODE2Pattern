@@ -5,10 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python 调试程序: main.py",
+            //"name": "Python 调试程序: main.py",
+            "name": "Python 调试程序: 当前文件.py",
             "type": "debugpy",
             "request": "launch",
-            "program": "main.py",
+            // "program": "main.py",
+            "program": "${file}",
             "console": "integratedTerminal"
         }
     ]

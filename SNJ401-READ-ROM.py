@@ -1,30 +1,11 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-from PySide2.QtWidgets import QMessageBox
 import os
-import re
-import msvcrt
+import win32api
+import win32con
 
 
-re_hex_data = re.compile(r"(?:[0-9a-fA-F]{2}\s??){16}")
-re_space_line = re.compile(r"\s+")  # 空行
-patternHeadInfo = """SET_DEC_FILE "SNJ401.DEC"
-HEADER  PA3,VPP,PB3,PB2;
-
-SPM_PATTERN(blanCheck)
-{
-           //PVPP
-           //APBB
-           //3P32
-"""
-
-write_end_info = """    *1 0 0 X*RPT 16;
-    *1 0 0 X*;
-}
-"""
-
-
-def error_info(info):
+def errorInfo(info):
     win32api.MessageBox(
         None,
         info,
@@ -34,95 +15,312 @@ def error_info(info):
     exit(0)
 
 
-def esg_info(info):
+def esgInfo(info):
     win32api.MessageBox(
         None, info, "转换完成", win32con.MB_OK | win32con.MB_SYSTEMMODAL
     )
     exit(0)
 
 
-def int_to_pat(int_value, io_type, pin_type):
-    list = [0] * 8
-    if int_value > 255 or int_value < 0:
-        errorInfo("int_to_pat方法中的数值不满足0~255范围,请确认!!!")
-    if str.lower(io_type) not in pin_type:
-        errorInfo("int_to_pat方法中io_type类型不是input或output,请确认!!!")
+patternHeadInfo = """SET_DEC_FILE "SNJ401.DEC"
+
+HEADER  PA3,VPP,PB3,PB2;
+
+SPM_PATTERN(readRom)
+{
+   //PVPP
+   //APBB
+   //3P32
+ST: *00XX*TS1;//TS1 5uS
+    *00XX*;//     0     To enter I2C mode: VPP= 0101 0011 1010 11 01
+    *10XX*;
+    *01XX*;//     1
+    *11XX*;
+    *00XX*;//     0
+    *10XX*;
+    *01XX*;//     1
+    *11XX*;
+    *00XX*;//     0
+    *10XX*;
+    *00XX*;//     0
+    *10XX*;
+    *01XX*;//     1
+    *11XX*;
+    *01XX*;//     1
+    *11XX*;
+    *01XX*;//     1
+    *11XX*;
+    *00XX*;//     0
+    *10XX*;
+    *01XX*;//     1
+    *11XX*;
+    *00XX*;//     0
+    *10XX*;
+    *01XX*;//     1
+    *11XX*;
+    *01XX*;//     1
+    *11XX*;
+    *00XX*;//     0
+    *10XX*;
+    *01XX*;//     1
+    *11XX*;
+    *0011*RPT 8; //delay
+    *0011*;//I2C MODE
+    *0011*;//I2C start
+    *0010*;
+    *0000*;//CCIN CC=0
+    *0010*;
+    *0010*;
+    *0000*;
+    *0000*;//0  COMMAND ADDR
+    *0010*;
+    *0010*;
+    *0000*;
+    *0000*;//0
+    *0010*;
+    *0010*;
+    *0000*;
+    *0001*;//1
+    *0011*;
+    *0011*;
+    *0001*;
+    *0000*;//0
+    *0010*;
+    *0010*;
+    *0000*;
+    *000X*;//ACK
+    *001L*;
+    *001L*;
+    *000X*;
+    *000X*;//H  READ ID0=11 0000 0001
+    *001H*;
+    *000X*;//H
+    *001H*;
+    *000X*;//L
+    *001L*;
+    *000X*;//L
+    *001L*;
+    *000X*;//L
+    *001L*;
+    *000X*;//L
+    *001L*;
+    *000X*;//L
+    *001L*;
+    *000X*;//L
+    *001L*;
+    *000X*;//L
+    *001L*;
+    *000X*;//H
+    *001H*;
+    *0000*;//STOP
+    *0010*;
+    *0011*;
+    *0011*;//I2C start
+    *0011*;
+    *0010*;
+    *0000*;//CCIN CC=0
+    *0010*;
+    *0010*;
+    *0000*;
+    *0000*;//0  COMMAND ADDR
+    *0010*;
+    *0010*;
+    *0000*;
+    *0000*;//0
+    *0010*;
+    *0010*;
+    *0000*;
+    *0001*;//1
+    *0011*;
+    *0011*;
+    *0001*;
+    *0001*;//1
+    *0011*;
+    *0011*;
+    *0001*;
+    *000X*;//ACK
+    *001L*;
+    *001L*;
+    *000X*;
+    *000X*;//X READ ID0=XX 0001 0001
+    *001X*;
+    *000X*;//X
+    *001X*;
+    *000X*;//L
+    *001L*;
+    *000X*;//L
+    *001L*;
+    *000X*;//L
+    *001L*;
+    *000X*;//H
+    *001H*;
+    *000X*;//L
+    *001L*;
+    *000X*;//L
+    *001L*;
+    *000X*;//L
+    *001L*;
+    *000X*;//H
+    *001H*;
+    *0000*;//STOP
+    *0010*;
+    *0011*;
+    *0011*RPT 20;//VPP=0 delay
+    *0111*RPT 100;//READ DATA VPP=3.0V
+    *0111*TS2;//TS2 = 4uS,I2C start
+    *0111*;
+    *0110*;
+    *0100*;
+    *0100*;
+    *0101*;//CCIN CC=1
+    *0111*;
+    *0111*;
+    *0101*;
+    *0101*;//RWB=1
+    *0111*;
+    *0111*;
+    *0101*;
+    *0100*RPT 4;
+"""
+# patternDataACK = """    *0100*;
+#     *0110*;//AKI6
+# """
+
+patternDataACK = """    *0100*;
+    *0100*;
+    *0110*;//AKI6
+    *0110*;
+    *0100*;
+    *0100*;
+"""
+patternForEnd = """    *0100*;//STOP
+    *0110*;
+    *0111*;
+    *0011*;//VPP=0V
+    *0011*;
+    *0011*;
+}
+"""
+
+
+def data2bitList(data):
+    bitList = ["0"] * 8
     for i in range(8 - 1, -1, -1):
-        if int_value & (1 << i):
-            if str.lower(io_type) == "input":
-                list[i] = "1"
-            elif str.lower(io_type) == "output":
-                list[i] = "H"
+        if data & (1 << i):
+            bitList[i] = "1"
         else:
-            if str.lower(io_type) == "input":
-                list[i] = "0"
-            elif str.lower(io_type) == "output":
-                list[i] = "L"
-    return list
+            bitList[i] = "0"
+    return bitList
 
 
-def write_pat_to_file(data, bit_list, waveform_format):
-    with open("readrom.pat", "a", encoding="UTF-8") as fp:
-        fp.write("// DI = 0xFF => 1111 1111\n")
-        fp.write(
-            "// DO = %s => %s %s\n"
-            % (hex(data), "".join(bit_list[7:3:-1]), "".join(bit_list[-5:-9:-1]))
-        )
+def writeData2File(data, bitList, byteCnt, fp, fileSize):
+    outputList = ["0"] * 8
+    if byteCnt % 2 == 0:
         for i in range(8 - 1, -1, -1):
-            if str.upper(waveform_format) == "NRZ":
-                fp.write("    *0 1 1 X*;\n")
-                fp.write("    *0 0 1 %s*;\n" % (bit_list[i]))
-            if str.upper(waveform_format) == "RZ":
-                fp.write("    *0 1 1 %s*;\n" % (bit_list[i]))
-
-
-def write_pat_to_file_last_bit(data, bit_list, waveform_format):
-    with open("readrom.pat", "a", encoding="UTF-8") as fp:
-        fp.write("// DI = 0x00 => 0000 0000\n")
-        fp.write(
-            "// DO = %s => %s %s\n"
-            % (hex(data), "".join(bit_list[7:3:-1]), "".join(bit_list[-5:-9:-1]))
-        )
+            if bitList[i] == "1":
+                outputList[i] = "H"
+            else:
+                outputList[i] = "L"
         for i in range(8 - 1, -1, -1):
-            if str.upper(waveform_format) == "NRZ":
-                fp.write("    *0 1 0 X*;\n")
-                fp.write("    *0 0 0 %s*;\n" % (bit_list[i]))
-            if str.upper(waveform_format) == "RZ":
-                fp.write("    *0 1 0 %s*;\n" % (bit_list[i]))
+            if i == 7:
+                fp.write(
+                    "    *010X*;//addr=%s(%d), data = %s => %s %s\n"
+                    % (
+                        "0x" + str(hex(byteCnt)[2:].zfill(5)).upper(),
+                        byteCnt,
+                        "0x" + str(hex(data)[2:].zfill(2)).upper(),
+                        "".join(bitList[7:3:-1]),
+                        "".join(bitList[-5:-9:-1]),
+                    )
+                )
+                fp.write("    *011%s*;//D%s %s\n" % (outputList[i], i, outputList[i]))
+            else:
+                if i == 6 and byteCnt == 0x07A7:
+                    fp.write("O8M:")
+                    fp.write("*010X*;\n")
+                    fp.write(
+                        "    *011%s*;//D%s %s\n" % (outputList[i], i, outputList[i])
+                    )
+                    continue
+                if i == 5 and byteCnt == 0x07A8:
+                    fp.write("O32:")
+                    fp.write("*010X*;\n")
+                    fp.write(
+                        "    *011%s*;//D%s %s\n" % (outputList[i], i, outputList[i])
+                    )
+                    continue
+                fp.write("    *010X*;\n")
+                fp.write("    *011%s*;//D%s %s\n" % (outputList[i], i, outputList[i]))
+        fp.write(patternDataACK)
+    else:
+        for i in range(8 - 1, -1, -1):
+            if bitList[i] == "1":
+                outputList[i] = "L"
+            else:
+                outputList[i] = "H"
+        for i in range(8 - 1, -1, -1):
+            if i == 7:
+                fp.write(
+                    "    *010X*;//addr=%s(%d), data = %s => %s %s\n"
+                    % (
+                        "0x" + str(hex(byteCnt)[2:].zfill(5)).upper(),
+                        byteCnt,
+                        "0x" + str(hex(data)[2:].zfill(2)).upper(),
+                        "".join(bitList[7:3:-1]),
+                        "".join(bitList[-5:-9:-1]),
+                    )
+                )
+                fp.write(
+                    "    *011%s*;//D%s %s(%s) \n"
+                    % (outputList[i], i, outputList[i], bitList[i])
+                )
+            else:
+                if i == 6 and byteCnt == 0x07A7:
+                    fp.write("O8M:")
+                    fp.write("*010X*;\n")
+                    fp.write(
+                        "    *011%s*;//D%s %s(%s)\n"
+                        % (outputList[i], i, outputList[i], bitList[i])
+                    )
+                    continue
+                if i == 5 and byteCnt == 0x07A8:
+                    fp.write("O32:")
+                    fp.write("*010X*;\n")
+                    fp.write(
+                        "    *011%s*;//D%s %s(%s)\n"
+                        % (outputList[i], i, outputList[i], bitList[i])
+                    )
+                    continue
+                fp.write("    *010X*;\n")
+                fp.write(
+                    "    *011%s*;//D%s %s(%s)\n"
+                    % (outputList[i], i, outputList[i], bitList[i])
+                )
+        fp.write(patternDataACK)
 
 
-def data2Pattern(patternFile, dataList):
-    dataCnt = 1
-    bitSize = len(dataList) * 8
+def data2Pattern(dataList, patternFile, fileSize):
+    byteCnt = 0
+    bitList = ["0"] * 8
     with open(patternFile, "a", encoding="UTF-8") as fp:
         fp.write(patternHeadInfo)
-
         for data in dataList:
-            if data_count * 8 < bitSize:
-                bit_list = int_to_pat(data, "output", pin_type)
-                write_pat_to_file(data, bit_list, "NRZ")
-            elif data_count * 8 == bitSize:
-                print("==========")
-                bit_list = int_to_pat(data, "output", pin_type)
-                write_pat_to_file_last_bit(data, bit_list, "NRZ")
-                with open("readrom.pat", "a", encoding="UTF-8") as fp:
-                    fp.write("\n")
-                    fp.write(write_end_info)
-            if data_count * 8 > bitSize:
-                print(">>>>>>")
-                return
-            data_count += 1
+            bitList = data2bitList(data)
+            writeData2File(data, bitList, byteCnt, fp, fileSize)
+            byteCnt += 1
+        fp.write(patternForEnd)
+    return byteCnt
 
 
-def getFileData(file, self):
+def checkFileSize(file, size):
+    fileSize = os.path.getsize(file)
+    if fileSize != size:
+        errorInfo(f"{file} 不是{size/1024}KB 文件大小,请确认fpga文件是否正确!")
+
+
+def getFileData(file):
     dataList = list()
     with open(file, "rb") as fp:
-        fileSize = os.path.getsize(file)
-        if fileSize != 128 * 1024:
-            MessageBox = QMessageBox()
-            MessageBox.critical(
-                None, "警告", f"{file} 不是128K 文件大小,请确认bin文件是否正确!"
-            )
         while True:
             data = fp.read(16)
             if not data:  # 文件末尾跳出
@@ -133,14 +331,21 @@ def getFileData(file, self):
 
 
 def readRom(filePath):
+    fileSize = 128 * 1024
+    # fileSize = 32
     parDir = os.path.dirname(filePath)
-    fileName, _ = os.path.split(filePath)
-    srcFile = parDir + "/" + fileName + ".pat"
+    _, file = os.path.split(filePath)
+    fileName, _ = os.path.splitext(file)
+    srcFile = parDir + "/" + "READ_" + fileName.upper() + ".pat"
     if os.path.exists(srcFile):
         os.remove(srcFile)
+    checkFileSize(filePath, fileSize)
     dataList = getFileData(filePath)
-    data2Pattern(dataList, srcFile)
+    byteCnt = data2Pattern(dataList, srcFile, fileSize)
+    if byteCnt != fileSize:
+        errorInfo(f"生成的{srcFile} 写入字节数不是{fileSize},请确认！！！")
 
 
 if __name__ == "__main__":
-    readRom()
+    readRom(r"C:/Users/Lenovo/Desktop/a/XYF001.fpga")
+    # readRom(r"C:/Users/Lenovo/Desktop/a/32Byte.fpga")
