@@ -4,6 +4,8 @@ import os
 import win32api
 import win32con
 
+isDebug = 0
+
 
 def errorInfo(info):
     win32api.MessageBox(
@@ -12,14 +14,12 @@ def errorInfo(info):
         "错误",
         win32con.MB_ICONERROR | win32con.MB_OK | win32con.MB_SYSTEMMODAL,
     )
-    exit(0)
 
 
 def esgInfo(info):
     win32api.MessageBox(
         None, info, "转换完成", win32con.MB_OK | win32con.MB_SYSTEMMODAL
     )
-    exit(0)
 
 
 patternHeadInfo = """SET_DEC_FILE "SNJ401.DEC"
@@ -136,13 +136,13 @@ patternDataACK = """    *0100*;
     *0110*;//AKI6
 """
 
-# patternDataACK = """    *0100*;
-#     *0100*;
-#     *0110*;//AKI6
-#     *0110*;
-#     *0100*;
-#     *0100*;
-# """
+patternDataACKForDebug = """    *0100*;
+    *0100*;
+    *0110*;//AKI6
+    *0110*;
+    *0100*;
+    *0100*;
+"""
 patternForEnd = """    *0100*;//STOP
     *0110*;
     *0111*;
@@ -163,7 +163,7 @@ def data2bitList(data):
     return bitList
 
 
-def writeData2File(data, bitList, byteCnt, fp, fileSize):
+def writeData2File(data, bitList, byteCnt, fp, debugFlag):
     outputList = ["0"] * 8
     if byteCnt % 2 == 0:
         for i in range(8 - 1, -1, -1):
@@ -201,7 +201,10 @@ def writeData2File(data, bitList, byteCnt, fp, fileSize):
                     continue
                 fp.write("    *010X*;\n")
                 fp.write("    *011%s*;//D%s %s\n" % (outputList[i], i, outputList[i]))
-        fp.write(patternDataACK)
+        if not debugFlag:
+            fp.write(patternDataACK)
+        else:
+            fp.write(patternDataACKForDebug)
     else:
         for i in range(8 - 1, -1, -1):
             if bitList[i] == "1":
@@ -246,17 +249,20 @@ def writeData2File(data, bitList, byteCnt, fp, fileSize):
                     "    *011%s*;//D%s %s(%s)\n"
                     % (outputList[i], i, outputList[i], bitList[i])
                 )
-        fp.write(patternDataACK)
+        if not debugFlag:
+            fp.write(patternDataACK)
+        else:
+            fp.write(patternDataACKForDebug)
 
 
-def data2Pattern(dataList, patternFile, fileSize):
+def data2Pattern(dataList, patternFile, debugFlag):
     byteCnt = 0
     bitList = ["0"] * 8
     with open(patternFile, "a", encoding="UTF-8") as fp:
         fp.write(patternHeadInfo)
         for data in dataList:
             bitList = data2bitList(data)
-            writeData2File(data, bitList, byteCnt, fp, fileSize)
+            writeData2File(data, bitList, byteCnt, fp, debugFlag)
             byteCnt += 1
         fp.write(patternForEnd)
     return byteCnt
@@ -280,9 +286,7 @@ def getFileData(file):
     return dataList
 
 
-def readRom(filePath):
-    fileSize = 128 * 1024
-    # fileSize = 32
+def readRom(filePath, fileSize, debugFlag):
     parDir = os.path.dirname(filePath)
     _, file = os.path.split(filePath)
     fileName, _ = os.path.splitext(file)
@@ -291,11 +295,7 @@ def readRom(filePath):
         os.remove(srcFile)
     checkFileSize(filePath, fileSize)
     dataList = getFileData(filePath)
-    byteCnt = data2Pattern(dataList, srcFile, fileSize)
+    byteCnt = data2Pattern(dataList, srcFile, debugFlag)
     if byteCnt != fileSize:
         errorInfo(f"生成的{srcFile} 写入字节数不是{fileSize},请确认！！！")
-
-
-if __name__ == "__main__":
-    readRom(r"C:/Users/Lenovo/Desktop/a/XYF001.fpga")
-    # readRom(r"C:/Users/Lenovo/Desktop/a/32Byte.fpga")
+    esgInfo("readRom 任务完成!")

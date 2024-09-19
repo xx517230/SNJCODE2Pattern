@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 import os
-import win32api
-import win32con
+import win32api  # type: ignore
+import win32con  # type: ignore
 
 
 def errorInfo(info):
@@ -12,14 +12,12 @@ def errorInfo(info):
         "错误",
         win32con.MB_ICONERROR | win32con.MB_OK | win32con.MB_SYSTEMMODAL,
     )
-    exit(0)
 
 
 def esgInfo(info):
     win32api.MessageBox(
         None, info, "转换完成", win32con.MB_OK | win32con.MB_SYSTEMMODAL
     )
-    exit(0)
 
 
 patternHeadInfo = """SET_DEC_FILE "SNJ401.DEC"
@@ -346,9 +344,7 @@ def getFileData(file):
     return dataList
 
 
-def writeRom(filePath):
-    fileSize = 128 * 1024
-    # fileSize = 32
+def writeRom(filePath, fileSize):
     parDir = os.path.dirname(filePath)
     _, file = os.path.split(filePath)
     fileName, _ = os.path.splitext(file)
@@ -360,8 +356,4 @@ def writeRom(filePath):
     byteCnt = data2Pattern(dataList, srcFile, fileSize)
     if byteCnt != fileSize:
         errorInfo(f"生成的{srcFile} 写入字节数不是{fileSize},请确认！！！")
-
-
-if __name__ == "__main__":
-    writeRom(r"C:/Users/Lenovo/Desktop/a/XYF001.fpga")
-    # writeRom(r"C:/Users/Lenovo/Desktop/a/32Byte.fpga")
+    esgInfo("writeRom 任务完成!")
