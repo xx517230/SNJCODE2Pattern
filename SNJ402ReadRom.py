@@ -20,7 +20,7 @@ def esgInfo(info):
     )
 
 
-patternHeadInfo = """SET_DEC_FILE "SNJ401.DEC"
+patternHeadInfo = """SET_DEC_FILE "SNJ402.DEC"
 
 HEADER  PA3,VPP,PB3,PB2;
 
