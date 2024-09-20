@@ -1,24 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 import os
-import win32api
-import win32con
-
-
-def errorInfo(info):
-    win32api.MessageBox(
-        None,
-        info,
-        "错误",
-        win32con.MB_ICONERROR | win32con.MB_OK | win32con.MB_SYSTEMMODAL,
-    )
-
-
-def esgInfo(info):
-    win32api.MessageBox(
-        None, info, "转换完成", win32con.MB_OK | win32con.MB_SYSTEMMODAL
-    )
-
+from MyWindow import *
 
 patternHeadInfo = """SET_DEC_FILE "SNJ401.DEC"
 
@@ -154,7 +137,7 @@ patternForEnd = """    *0100*;//STOP
 def data2bitList(data):
     bitList = ["0"] * 8
     for i in range(8 - 1, -1, -1):
-        if data & (1 << i):
+        if data >> i & 1:
             bitList[i] = "1"
         else:
             bitList[i] = "0"
@@ -253,23 +236,32 @@ def writeData2File(data, bitList, byteCnt, fp, debugFlag):
             fp.write(patternDataACKForDebug)
 
 
-def data2Pattern(dataList, patternFile, debugFlag):
+def data2Pattern(self, dataList, patternFile, debugFlag):
     byteCnt = 0
     bitList = ["0"] * 8
+    fileSize = len(dataList)
     with open(patternFile, "a", encoding="UTF-8") as fp:
         fp.write(patternHeadInfo)
         for data in dataList:
             bitList = data2bitList(data)
             writeData2File(data, bitList, byteCnt, fp, debugFlag)
             byteCnt += 1
+            if byteCnt % (int(fileSize / 100)) == 0 or byteCnt == fileSize:
+                self.labelStatus.setText(
+                    f"生成readRom.pat: 共 {int(fileSize/1024)} KB, 已处理 {int(byteCnt/1024)} KB, {int((byteCnt/fileSize)*100)}%"
+                )
+                self.labelStatus.repaint()
+                self.pBar.setValue(int((byteCnt / fileSize) * 100))
         fp.write(patternForEnd)
     return byteCnt
 
 
-def checkFileSize(file, size):
+def checkFileSize(self, file, size):
     fileSize = os.path.getsize(file)
     if fileSize != size:
-        errorInfo(f"{file} 不是{size/1024}KB 文件大小,请确认fpga文件是否正确!")
+        QMessageBox.critical(
+            self, "警告", f"{file} 不是{size/1024}KB 文件大小,请确认fpga文件是否正确!"
+        )
 
 
 def getFileData(file):
@@ -284,16 +276,18 @@ def getFileData(file):
     return dataList
 
 
-def readRom(filePath, fileSize, debugFlag):
+def readRom(self, filePath, fileSize, debugFlag):
     parDir = os.path.dirname(filePath)
     _, file = os.path.split(filePath)
     fileName, _ = os.path.splitext(file)
     srcFile = parDir + "/" + "READ_" + fileName.upper() + ".pat"
     if os.path.exists(srcFile):
         os.remove(srcFile)
-    checkFileSize(filePath, fileSize)
+    checkFileSize(self, filePath, fileSize)
     dataList = getFileData(filePath)
-    byteCnt = data2Pattern(dataList, srcFile, debugFlag)
+    byteCnt = data2Pattern(self, dataList, srcFile, debugFlag)
     if byteCnt != fileSize:
-        errorInfo(f"生成的{srcFile} 写入字节数不是{fileSize},请确认！！！")
-    esgInfo("readRom 任务完成!")
+        QMessageBox.critical(
+            self, "警告", f"生成的{srcFile} 写入字节数不是{fileSize},请确认！！！"
+        )
+    QMessageBox.information(self, "完成", "readRom 任务完成!")

@@ -9,7 +9,7 @@ class MyWindow(QWidget, Ui_MyWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.setWindowTitle("SNJ401 烧录文件转换")
+        self.setWindowTitle("SNJ40X 烧录文件转换")
         self.tbtnSelect.setDefaultAction(self.actSelect)
         self.tbtnSelect.clicked.connect(self.selectFile)
         self.tbtnDo.clicked.connect(self.convertCodeFile)
@@ -21,7 +21,7 @@ class MyWindow(QWidget, Ui_MyWindow):
             self,
             "选择文件",
             desktopPath,
-            "烧录文件 (*.fpga);;所有文件 (*)",
+            "烧录文件 (*.fpga *.bin *.hex);;所有文件 (*)",
         )
         if filePath:
             self.editFile.setText(str(filePath).replace("/", "\\"))
@@ -48,6 +48,6 @@ class MyWindow(QWidget, Ui_MyWindow):
         else:
             debugFlag = False
         if self.chkRead.isChecked():
-            readRom(filePath, fileSize, debugFlag)
+            readRom(self, filePath, fileSize, debugFlag)
         if self.chkWrite.isChecked():
-            writeRom(filePath, fileSize)
+            writeRom(self, filePath, fileSize)

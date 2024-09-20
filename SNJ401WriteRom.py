@@ -3,6 +3,7 @@
 import os
 import win32api  # type: ignore
 import win32con  # type: ignore
+from MyWindow import *
 
 
 def errorInfo(info):
@@ -273,7 +274,7 @@ patternForEnd = """    *00101*TS1;//5uS
 def data2bitList(data):
     bitList = ["0"] * 8
     for i in range(8 - 1, -1, -1):
-        if data & (1 << i):
+        if data >> i & 1:
             bitList[i] = "1"
         else:
             bitList[i] = "0"
@@ -314,7 +315,7 @@ def writeData2File(data, bitList, byteCnt, fp, fileSize):
         fp.write(patternForEnd)
 
 
-def data2Pattern(dataList, patternFile, fileSize):
+def data2Pattern(self, dataList, patternFile, fileSize):
     byteCnt = 0
     bitList = ["0"] * 8
     with open(patternFile, "a", encoding="UTF-8") as fp:
@@ -323,13 +324,21 @@ def data2Pattern(dataList, patternFile, fileSize):
             bitList = data2bitList(data)
             writeData2File(data, bitList, byteCnt, fp, fileSize)
             byteCnt += 1
+            if byteCnt % (int(fileSize / 100)) == 0 or byteCnt == fileSize:
+                self.labelStatus.setText(
+                    f"生成writeRom.pat: 共 {int(fileSize/1024)} KB, 已处理 {int(byteCnt/1024)} KB, {int((byteCnt/fileSize)*100)}%"
+                )
+                self.labelStatus.repaint()
+                self.pBar.setValue(int((byteCnt / fileSize) * 100))
     return byteCnt
 
 
-def checkFileSize(file, size):
+def checkFileSize(self, file, size):
     fileSize = os.path.getsize(file)
     if fileSize != size:
-        errorInfo(f"{file} 不是{size/1024}KB 文件大小,请确认fpga文件是否正确!")
+        QMessageBox.critical(
+            self, "警告", f"{file} 不是{size/1024}KB 文件大小,请确认fpga文件是否正确!"
+        )
 
 
 def getFileData(file):
@@ -344,16 +353,18 @@ def getFileData(file):
     return dataList
 
 
-def writeRom(filePath, fileSize):
+def writeRom(self, filePath, fileSize):
     parDir = os.path.dirname(filePath)
     _, file = os.path.split(filePath)
     fileName, _ = os.path.splitext(file)
     srcFile = parDir + "/" + "WRITE_" + fileName.upper() + ".pat"
     if os.path.exists(srcFile):
         os.remove(srcFile)
-    checkFileSize(filePath, fileSize)
+    checkFileSize(self, filePath, fileSize)
     dataList = getFileData(filePath)
-    byteCnt = data2Pattern(dataList, srcFile, fileSize)
+    byteCnt = data2Pattern(self, dataList, srcFile, fileSize)
     if byteCnt != fileSize:
-        errorInfo(f"生成的{srcFile} 写入字节数不是{fileSize},请确认！！！")
-    esgInfo("writeRom 任务完成!")
+        QMessageBox.critical(
+            self, "警告", f"生成的{srcFile} 写入字节数不是{fileSize},请确认！！！"
+        )
+    QMessageBox.information(self, "完成", "writeRom 任务完成!")

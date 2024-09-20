@@ -11,11 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>SNJ Code Deal</string>
+   <string>SNJ40X 烧录文件转换</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
    <item row="7" column="0">
-    <widget class="QLabel" name="lableStatus">
+    <widget class="QLabel" name="labelStatus">
      <property name="text">
       <string/>
      </property>

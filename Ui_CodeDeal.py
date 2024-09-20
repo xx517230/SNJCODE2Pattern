@@ -26,10 +26,10 @@ class Ui_MyWindow(object):
         self.actSelect.setIcon(icon)
         self.gridLayout_3 = QGridLayout(MyWindow)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
-        self.lableStatus = QLabel(MyWindow)
-        self.lableStatus.setObjectName(u"lableStatus")
+        self.labelStatus = QLabel(MyWindow)
+        self.labelStatus.setObjectName(u"labelStatus")
 
-        self.gridLayout_3.addWidget(self.lableStatus, 7, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.labelStatus, 7, 0, 1, 1)
 
         self.pBar = QProgressBar(MyWindow)
         self.pBar.setObjectName(u"pBar")
@@ -140,7 +140,7 @@ class Ui_MyWindow(object):
     # setupUi
 
     def retranslateUi(self, MyWindow):
-        MyWindow.setWindowTitle(QCoreApplication.translate("MyWindow", u"SNJ Code Deal", None))
+        MyWindow.setWindowTitle(QCoreApplication.translate("MyWindow", u"SNJ40X \u70e7\u5f55\u6587\u4ef6\u8f6c\u6362", None))
         self.actSelect.setText(QCoreApplication.translate("MyWindow", u"\u9009\u62e9\u76ee\u5f55", None))
 #if QT_CONFIG(tooltip)
         self.actSelect.setToolTip(QCoreApplication.translate("MyWindow", u"\u9009\u62e9\u76ee\u5f55", None))
@@ -148,7 +148,7 @@ class Ui_MyWindow(object):
 #if QT_CONFIG(shortcut)
         self.actSelect.setShortcut(QCoreApplication.translate("MyWindow", u"Ctrl+O", None))
 #endif // QT_CONFIG(shortcut)
-        self.lableStatus.setText("")
+        self.labelStatus.setText("")
         self.groupBox.setTitle(QCoreApplication.translate("MyWindow", u"\u9009\u62e9\u5f85\u70e7\u5f55\u7684fpga\u4e8c\u8fdb\u5236\u6587\u4ef6", None))
         self.tbtnSelect.setText(QCoreApplication.translate("MyWindow", u"\u9009\u62e9", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("MyWindow", u"\u578b\u53f7\u9009\u62e9", None))
