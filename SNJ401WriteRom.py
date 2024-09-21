@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 import os
-import win32api  # type: ignore
-import win32con  # type: ignore
 from MyWindow import *
 
 patternHeadInfo = """SET_DEC_FILE "SNJ401.DEC"
