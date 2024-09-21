@@ -5,22 +5,6 @@ import win32api  # type: ignore
 import win32con  # type: ignore
 from MyWindow import *
 
-
-def errorInfo(info):
-    win32api.MessageBox(
-        None,
-        info,
-        "错误",
-        win32con.MB_ICONERROR | win32con.MB_OK | win32con.MB_SYSTEMMODAL,
-    )
-
-
-def esgInfo(info):
-    win32api.MessageBox(
-        None, info, "转换完成", win32con.MB_OK | win32con.MB_SYSTEMMODAL
-    )
-
-
 patternHeadInfo = """SET_DEC_FILE "SNJ401.DEC"
 
 HEADER  PA3,PB3,PB2,VPP_CTRL,PA1;//VPP_CTRL控制VPP_CH(PMU 7.5V)与VPP_PAD的通断，PA1通过二极管与VPP_PAD连接（二极管防止VPP 7.5V灌入通道）
