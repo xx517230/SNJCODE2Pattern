@@ -175,13 +175,14 @@ SPM_PATTERN(writeRom)
     *00001*RPT 10;      //PMU7.5V接上,同时保持PA1 3V
     *00001*RPT 10;
     *00001*;            //VPP set to 7.5V for OTP program   
-    *00001*TS2,RPT 10;//write data start TS2 = 4uS
+    *00001*TS8,RPT 10;//write data start
 """
 
 patternForNotEnd = """    *00001*;
     *01001*;//NOT END 0
     *00L01*;
     *01L01*;//ACK AK06
+    *00X01*RPT 8;
 """
 patternForEnd = """    *00101*TS1;//5uS
     *01101*;//END 1

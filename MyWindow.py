@@ -41,6 +41,7 @@ class MyWindow(QWidget, Ui_MyWindow):
             return
         if self.rbtnSNJ401.isChecked():
             fileSize = 128 * 1024
+            # fileSize = 32
         else:
             fileSize = 52 * 1024
         if self.rbtnDebug.isChecked():

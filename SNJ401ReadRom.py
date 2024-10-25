@@ -111,7 +111,8 @@ ST: *00XX*TS1;//TS1 5uS
     *0111*;
     *0111*;
     *0101*;
-    *0100*RPT 4;
+    *0100*RPT 3;
+    *0100*TS7;
 """
 patternDataACK = """    *0100*;
     *0110*;//AKI6
@@ -124,7 +125,7 @@ patternDataACKForDebug = """    *0100*;
     *0100*;
     *0100*;
 """
-patternForEnd = """    *0100*;//STOP
+patternForEnd = """    *0100*TS1;//STOP
     *0110*;
     *0111*;
     *0011*;//VPP=0V
